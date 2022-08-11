@@ -42,6 +42,7 @@
 
         let conn = null;
         let peer = null;
+        let connOption = {host: '10.112.247.245', port: 9100, path: '/signaling', debug: 3}
 
         sendMessage = function (message) {
             conn.send(JSON.stringify(message));
@@ -61,7 +62,7 @@
                         return;
                     }
                     //创建peer实例 
-                    peer = new Peer(txtSelfId.value);
+                    peer = new Peer(txtSelfId.value,connOption);
 
                     //register成功的回调
                     peer.on('open', function (id) {
