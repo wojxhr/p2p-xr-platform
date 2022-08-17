@@ -26,6 +26,9 @@
             </td>
         </tr>
         <tr>
+            <input type="file" id="inputFile" />
+        </tr>
+        <tr>
             <td colspan="2" class="chatMessageBox" id="tdBox">
             </td>
         </tr>
@@ -33,16 +36,23 @@
 
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script>
+        let conn = null;
+        let peer = null;
+        let connOption = {host: '10.112.247.245', port: 9100, path: '/signaling', debug: 3}
+        let peerIdServerUrl="http://10.112.247.245:9100/signaling/peerjs/id";
+        let trackerRegister="http://127.0.0.1:5000/register"
+        
         var txtSelfId = document.querySelector("input#txtSelfId");
         var txtTargetId = document.querySelector("input#txtTargetId");
         var txtMsg = document.querySelector("input#txtMsg");
         var tdBox = document.querySelector("td#tdBox");
         var btnRegister = document.querySelector("button#btnRegister");
-        var btnSend = document.querySelector("button#btnSend");
-
-        let conn = null;
-        let peer = null;
-        let connOption = {host: '10.112.247.245', port: 9100, path: '/signaling', debug: 3}
+        var btnSend = document.querySelector("button#btnSend"); 
+        var inputFile = document.querySelector("input#inputFile")
+    
+        inputFile.onchange = function (file) {
+            console.log(file);
+        }
 
         sendMessage = function (message) {
             conn.send(JSON.stringify(message));
@@ -50,8 +60,39 @@
             tdBox.innerHTML = tdBox.innerHTML += "<div class='align_left'>" + message.from + " : " + message.body + "</div>";
         }   
 
+        async function sendPeerIdToTracker(content) {
+            const response = await fetch(trackerRegister,{
+                method:"Post",
+                mode:"cors",
+                headers: {
+                    "Content-Type":"application/json"
+                },
+                body: JSON.stringify(content)
+            });
+            return response.text();
+        }
+
+        async function getPeerId(){
+            let peerID = await fetch(peerIdServerUrl)
+                    .then(response => response.text())
+                    .then(data=>{
+                        let sendata = {
+                            "peerId":data,
+                            "video":"m3u8"
+                        };
+                        console.log(sendPeerIdToTracker(data));
+                    })
+                    .catch(error => {console.log(error);});
+            return peerID
+        }
+        
+
+
 
         window.onload = function() {
+            console.log(getPeerId());
+
+
             //处理注册按钮
             btnRegister.onclick = function () {
                 if (!peer) {
@@ -111,7 +152,6 @@
                     sendMessage(message);
                 }
             }
-
         }
     </script>
 </body>
