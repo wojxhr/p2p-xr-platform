@@ -41,6 +41,8 @@
         let connOption = {host: '10.112.247.245', port: 9100, path: '/signaling', debug: 3}
         let peerIdServerUrl="http://10.112.247.245:9100/signaling/peerjs/id";
         let trackerRegister="http://127.0.0.1:5000/register"
+        let trackerDelete="http://127.0.0.1:5000/delete"
+        let trackerUpdate="http://127.0.0.1:5000/update"
         
         var txtSelfId = document.querySelector("input#txtSelfId");
         var txtTargetId = document.querySelector("input#txtTargetId");
@@ -59,19 +61,6 @@
             console.log(message);
             tdBox.innerHTML = tdBox.innerHTML += "<div class='align_left'>" + message.from + " : " + message.body + "</div>";
         }   
-
-        async function sendPeerIdToTracker(content) {
-            const response = await fetch(trackerRegister,{
-                method:"Post",
-                mode:"cors",
-                headers: {
-                    "Content-Type":"application/json"
-                },
-                body: JSON.stringify(content)
-            });
-            return response.text();
-        }
-
         async function getPeerId(){
             let peerID = await fetch(peerIdServerUrl)
                     .then(response => response.text())
@@ -85,7 +74,33 @@
                     .catch(error => {console.log(error);});
             return peerID
         }
+
+        async function sendPeerIdToTracker(content) {
+            const response = await fetch(trackerRegister,{
+                method:"Post",
+                mode:"cors",
+                headers: {
+                    "Content-Type":"application/json"
+                },
+                body: JSON.stringify(content)
+            });
+            return response.text();
+        }
+
+       
         
+        async function sendDeleteInfo(){
+            let content = "hello";
+            let response = await fetch(trackerDelete,{
+                method:"Post",
+                mode:"cors",
+                headers: {
+                    "Content-Type":"application/json"
+                },
+                body: JSON.stringify(content)
+            });
+            return response.text();
+        }
 
 
 
@@ -152,6 +167,11 @@
                     sendMessage(message);
                 }
             }
+        }
+    
+        window.onbeforeunload = function() {
+            console.log(sendDeleteInfo()); 
+            return "您确定退出吗？";
         }
     </script>
 </body>
