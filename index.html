@@ -38,12 +38,15 @@
     <script>
         let conn = null;
         let peer = null;
-        let connOption = {host: '10.112.247.245', port: 9100, path: '/signaling', debug: 3}
+        let peerID = null;
+        let node = {};
+        let connOption = {host: '10.112.247.245', port: 9100, path: '/signaling', debug: 3};
         let peerIdServerUrl="http://10.112.247.245:9100/signaling/peerjs/id";
-        let trackerRegister="http://127.0.0.1:5000/register"
-        let trackerDelete="http://127.0.0.1:5000/delete"
-        let trackerUpdate="http://127.0.0.1:5000/update"
-        
+        let trackerRegister="http://127.0.0.1:5000/register";
+        let trackerDelete="http://127.0.0.1:5000/delete";
+        let trackerUpdate="http://127.0.0.1:5000/update";
+        let trackerApply="http://127.0.0.1:5000/applyid";
+
         var txtSelfId = document.querySelector("input#txtSelfId");
         var txtTargetId = document.querySelector("input#txtTargetId");
         var txtMsg = document.querySelector("input#txtMsg");
@@ -61,36 +64,8 @@
             console.log(message);
             tdBox.innerHTML = tdBox.innerHTML += "<div class='align_left'>" + message.from + " : " + message.body + "</div>";
         }   
-        async function getPeerId(){
-            let peerID = await fetch(peerIdServerUrl)
-                    .then(response => response.text())
-                    .then(data=>{
-                        let sendata = {
-                            "peerId":data,
-                            "video":"m3u8"
-                        };
-                        console.log(sendPeerIdToTracker(data));
-                    })
-                    .catch(error => {console.log(error);});
-            return peerID
-        }
 
-        async function sendPeerIdToTracker(content) {
-            const response = await fetch(trackerRegister,{
-                method:"Post",
-                mode:"cors",
-                headers: {
-                    "Content-Type":"application/json"
-                },
-                body: JSON.stringify(content)
-            });
-            return response.text();
-        }
-
-       
-        
-        async function sendDeleteInfo(){
-            let content = "hello";
+        async function sendDeleteInfo(content){ 
             let response = await fetch(trackerDelete,{
                 method:"Post",
                 mode:"cors",
@@ -102,12 +77,73 @@
             return response.text();
         }
 
+        async function commonPostRequest(url, argument) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('post', url, false); // 第三个参数为是否开启异步请求
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(argument);
+            const result = xhr.responseText;
+            console.log(result);
+            return result;
+        }
 
+        async function commonGetRequest(url) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', url, false); // 第三个参数为是否开启异步请求
+            xhr.send(null);
+            const result = xhr.responseText;
+            return xhr.responseText;
+        }
+
+        async function getPeerId(){
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', peerIdServerUrl, false); // 第三个参数为是否开启异步请求
+            xhr.send(null);
+            const result = xhr.responseText;
+            peerID = result;
+            return xhr.responseText;
+        }
+
+        async function Register(){
+            const xhr = new XMLHttpRequest();
+            xhr.open('post', trackerRegister, false); // 第三个参数为是否开启异步请求
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify({"peerId":peerID}));
+            const result = xhr.responseText;
+            console.log(result);
+            return result;
+        }
+
+        async function getNodeList(){
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', trackerApply, false); // 第三个参数为是否开启异步请求
+            xhr.send(null);
+            const result = JSON.parse(xhr.responseText);
+            console.log(result);
+            // result.array.forEach(element => {
+            //     console.log(element);
+            // });
+            for(var id in result){
+                console.log("get id:"+id);
+                if(id != peerID){
+                    node[id] = result[id];
+                }
+            }
+        return xhr.responseText;
+        }
 
         window.onload = function() {
+            // getPeerId();
+            // 获取PeerID
             getPeerId();
+            // 进行注册
+            Register();
+            // 获取节点列表
+            getNodeList();
 
 
+            console.log(peerID);
+            console.log(node);
             //处理注册按钮
             btnRegister.onclick = function () {
                 if (!peer) {
@@ -170,9 +206,14 @@
         }
     
         window.onbeforeunload = function() {
-            console.log(sendDeleteInfo()); 
+            let content = {
+                "peerId":peerID
+            }
+            sendDeleteInfo(content);
             return "您确定退出吗？";
         }
+    
+    
     </script>
 </body>
 
