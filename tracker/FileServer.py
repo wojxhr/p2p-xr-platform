@@ -1,7 +1,7 @@
 import os,json
 import requests,threading
 from http.server import HTTPServer, BaseHTTPRequestHandler,SimpleHTTPRequestHandler
-from utils import net
+from utils import utils
 
 
 data = {"result":"Logxx"}
@@ -26,12 +26,20 @@ class FileManager:
 
     def register(self):
         if not self.ip:
-            self.ip = net.get_host_ip()
-            response = requests.post(TrackerURL+'/register',json.dumps({"ip":self.ip}))
+            self.ip = utils.get_host_ip()
+            # response = requests.post(TrackerURL+'/register',json.dumps({"ip":self.ip}))
+        else:
+            print('error')
 
     def report(self):
-        videoFiles = os.listdir('./video')
-        audioFiles = os.listdir('./audio')
+        videoFiles = os.listdir(self.video_path)
+        audioFiles = os.listdir(self.audio_path)
+        videoPost = utils.get_index(videoFiles)
+        audioPost = utils.get_index(audioFiles)
+
+
+        PostData = {"ip":self.ip,"videoObject":videoPost,"audioObject":audioPost}
+        response = requests.post(TrackerURL+'/report',json.dumps(PostData))
 
 
     def replace(self):
@@ -113,6 +121,7 @@ def Storage():
 
 def FileMonitor():
     monitor = FileManager()
+    monitor.report()
 
 
 if __name__ == '__main__':
