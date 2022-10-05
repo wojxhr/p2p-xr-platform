@@ -7,7 +7,7 @@ from utils import net
 data = {"result":"Logxx"}
 StorageHost = ('0.0.0.0', 8080)
 FileServerHost = ('0.0.0.0', 8000)
-TrackerURL = None
+TrackerURL = "http://127.0.0.1:5000"
 
 #TODO:file manager
 class FileManager:
@@ -22,10 +22,12 @@ class FileManager:
         self.video_path = './video'
         self.audio_path = './audio'
         self.ip = None
+        self.register()
 
     def register(self):
         if not self.ip:
             self.ip = net.get_host_ip()
+            response = requests.post(TrackerURL+'/register',json.dumps({"ip":self.ip}))
 
     def report(self):
         videoFiles = os.listdir('./video')
