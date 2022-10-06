@@ -41,7 +41,6 @@ class FileManager:
         PostData = {"ip":self.ip,"videoObject":videoPost,"audioObject":audioPost}
         response = requests.post(TrackerURL+'/report',json.dumps(PostData))
 
-
     def replace(self):
         pass
     def record(self):

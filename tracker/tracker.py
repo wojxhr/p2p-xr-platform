@@ -59,9 +59,18 @@ def report():
     print(mpd_list)
     return 'Update.'
 
-@app.route('/request',methods=['POST'])
+@app.route('/request',methods=['POST','GET'])
 def chunkRequest():
-    pass
+    if request.method == 'GET':
+        return 'hello world'
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # app.run(debug=True)
+
+    # from gevent import pywsgi
+    # server = pywsgi.WSGIServer(('0.0.0.0',5000),app)
+
+    from wsgiref.simple_server import make_server
+    server = make_server('0.0.0.0',5000,app)
+    server.serve_forever()
+    # app.run()
