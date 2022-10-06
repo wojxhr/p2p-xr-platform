@@ -1,4 +1,4 @@
-import os,json
+import os,json,time
 import requests,threading
 from http.server import HTTPServer, BaseHTTPRequestHandler,SimpleHTTPRequestHandler
 from utils import utils
@@ -7,7 +7,7 @@ from utils import utils
 data = {"result":"Logxx"}
 StorageHost = ('0.0.0.0', 8080)
 FileServerHost = ('0.0.0.0', 8000)
-TrackerURL = "http://127.0.0.1:5000"
+TrackerURL = "http://10.112.33.61:5000"
 
 #TODO:file manager
 class FileManager:
@@ -49,7 +49,11 @@ class FileManager:
         pass
 
     def run(self):
-        pass
+        while(True):
+            self.report()
+            time.sleep(2000)
+
+
 class CORSRequestHandler (SimpleHTTPRequestHandler):
     def end_headers (self):
         self.send_header('Access-Control-Allow-Origin', '*')
@@ -120,13 +124,16 @@ def Storage():
 
 def FileMonitor():
     monitor = FileManager()
-    monitor.report()
+    monitor.run()
 
 
 if __name__ == '__main__':
     # t1 = threading.Thread(target=File_Server)
     # t2 = threading.Thread(target=Storage)
-
+    # t3 = threading.Thread(target=FileMonitor)
+    #
     # t1.start()
     # t2.start()
-    FileMonitor()
+    # t3.start()
+    a = FileManager()
+    a.report()
